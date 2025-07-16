@@ -3,5 +3,5 @@ export default function Language(props){
         backgroundColor : props.backgroundColor,
         color : props.color
     }
-    return <span className = "chip"style ={styles}>{props.name}</span>
+    return <span className = {`chip ${props.className}`}style ={styles}>{props.name}</span>
 }

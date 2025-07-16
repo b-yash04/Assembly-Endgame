@@ -1,8 +1,8 @@
-export default function GameStatus(){
+export default function GameStatus(props){
     return(
-        <section className="game-status">
-            <h2>You win!</h2>
-            <p>Well done! 🎉</p>
+        <section className={`game-status ${props.className}`}>
+            <h2>{props.result}</h2>
+            <p>{props.remarks}</p>
         </section>
     )
 }
