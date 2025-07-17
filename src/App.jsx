@@ -6,12 +6,15 @@ import Letter from "./components/Letter.jsx"
 import {useState} from "react"
 import Key from "./components/Key.jsx"
 import clsx from "clsx";
+import {getFarewellText} from "./utils.js"
+import Confetti from 'react-confetti';
+import {getRandomWord} from './utils.js'
+
+
 export default function App(){
 
-
+    const [word, setWord] = useState(getRandomWord());
     
-
-    const [word, setWord] = useState("ELEPHANT");
     const [guessedLetter, setGuessedLetter] = useState([]);
     let correctLetters = 0
     const wordArr = word.split("").map((item,index) =>{
@@ -23,10 +26,12 @@ export default function App(){
     }
     
     )
+    const lastGuessedLetter = guessedLetter[guessedLetter.length - 1]
+    let isIncorrect = !word.includes(lastGuessedLetter)
     let wrongGuess = guessedLetter.filter(item => !word.includes(item)).length;
-    
+    let farewellLang = ""
     const languageArr =  languages.map((item,index) =>{
-
+        if(wrongGuess > index) farewellLang = item.name
         return (<Language key ={item.name}
                   name = {item.name} 
                   backgroundColor = {item.backgroundColor}
@@ -66,20 +71,45 @@ export default function App(){
                     alpha={item} 
                     key={item} 
                     className  = {className}
-                    onClick = {isGameOver ?undefined:()=> keyClick(item)}/>)
+                    onClick = {isGameOver ?undefined: isGameWon ? undefined : ()=> keyClick(item)}/>)
     })
+    let result = "";
+
+if (isGameWon) {
+  result = "You Won 🎉";
+} else if (isGameOver) {
+  result = "Game Over";
+} else if (isIncorrect && farewellLang) {
+  result = getFarewellText(farewellLang); 
+}
+function handle(){
+
+    setWord(getRandomWord())
+    setGuessedLetter([])
+}
+const lostLetters = word.split("").map((item,index) =>{
+    const display = guessedLetter.includes(item)
+    const className = clsx({
+        redword : !display
+    })
+    return ( <Letter className = {className} key ={index} letter = {item}/>
+
+    )
+})
     return (
         <main>
+            {isGameWon &&  <Confetti recycle={false}
+                        numberOfPieces={1000}/>}
             <Header />
             <GameStatus 
-            result = {isGameWon ? "You Won 🎉" : isGameOver ? "Game Over" : ""}
+            result = {result}
             remarks = {isGameWon ? "Well Done!" : isGameOver ? "You Lose! Better try learn Assembly Language 😭 " : ""}
-            className = {isGameWon ? "game-status-won" : isGameOver ? "game-status-lost" : ""}
+            className = {isGameWon ? "game-status-won" : isGameOver ? "game-status-lost" : isIncorrect && farewellLang ? "game-status-farewell":"status"}
             />
             <section className="language-chips">{languageArr}</section>
-            <section className="display-letter">{wordArr}</section>
+            <section className="display-letter">{isGameOver? lostLetters: wordArr}</section>
             <section className="keyboard">{keyboard}</section>
-            {isGameOver && <button className="new-game">New Game</button>}
+            {(isGameOver || isGameWon) && <button onClick={handle}  className="new-game">New Game</button>}
         </main>
     )
 }
